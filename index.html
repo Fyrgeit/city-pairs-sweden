@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Tätortspar</title>
+        <script src="index.js" type="module" defer></script>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <h1>Tätortspar</h1>
+        <form onsubmit="getPairs(event); return false;">
+            <label for="count">Antal resultat</label>
+            <input type="number" name="count" id="count" value="10" />
+            <br />
+            <label for="exponent">Exponent</label>
+            <input
+                type="number"
+                name="exponent"
+                id="exponent"
+                min="0"
+                step="0.1"
+                value="2.0"
+            />
+            <br />
+            <button type="submit">Hämta</button>
+        </form>
+        <div id="output"></div>
+    </body>
+</html>
