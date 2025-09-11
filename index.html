@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCmode html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
@@ -10,19 +10,82 @@
     <body>
         <h1>Tätortspar</h1>
         <form onsubmit="getPairs(event); return false;">
-            <label for="count">Antal resultat</label>
-            <input type="number" name="count" id="count" value="10" />
-            <br />
-            <label for="exponent">Exponent</label>
-            <input
-                type="number"
-                name="exponent"
-                id="exponent"
-                min="0"
-                step="0.1"
-                value="2.0"
-            />
-            <br />
+            <fieldset>
+                <legend>Resultat</legend>
+                <label for="count">Antal</label>
+                <input type="number" name="count" id="count" value="10" />
+                <br />
+                <input
+                    type="radio"
+                    name="sort"
+                    id="best"
+                    value="best"
+                    checked
+                />
+                <label for="best">Bäst först</label>
+                <br />
+                <input type="radio" name="sort" id="worst" value="worst" />
+                <label for="worst">Sämst först</label>
+                <br />
+                <input
+                    type="radio"
+                    name="scoreType"
+                    id="absolute"
+                    value="absolute"
+                    checked
+                />
+                <label for="absolute">Absoluta poäng</label>
+                <br />
+                <input
+                    type="radio"
+                    name="scoreType"
+                    id="relative"
+                    value="relative"
+                />
+                <label for="relative">Relativa poäng</label>
+            </fieldset>
+            <fieldset>
+                <legend>Dragningskraft</legend>
+                <label for="exponent">Exponent</label>
+                <input
+                    type="number"
+                    name="exponent"
+                    id="exponent"
+                    min="0"
+                    step="0.1"
+                    value="2"
+                />
+            </fieldset>
+            <fieldset>
+                <legend>Konkurrens</legend>
+                <label for="competitiveness">Andel</label>
+                <input
+                    type="number"
+                    name="competitiveness"
+                    id="competitiveness"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value="1"
+                />
+                <br />
+                <input
+                    type="radio"
+                    name="cmode"
+                    id="floor"
+                    value="floor"
+                    checked
+                />
+                <label for="floor">Platt</label>
+                <br />
+                <input
+                    type="radio"
+                    name="cmode"
+                    id="risingBaseline"
+                    value="risingBaseline"
+                />
+                <label for="risingBaseline">Ökande bas</label>
+            </fieldset>
             <button type="submit">Hämta</button>
         </form>
         <div id="output"></div>

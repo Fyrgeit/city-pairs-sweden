@@ -24,14 +24,48 @@ function haversine(a, b) {
     const d = 2 * R * Math.asin(Math.sqrt(h));
     return d;
 }
+function competitiveFactor(distance, c, mode) {
+    if (distance <= 0)
+        console.error('Distance is zero or negative');
+    if (c < 0 || c > 1)
+        console.error('Competitiveness out of range');
+    let floor = 0;
+    if (mode === 'risingBaseline')
+        floor = 1 - c;
+    if (distance <= 240)
+        return Math.max(((distance - 80) * c) / 160 + (1 - c), floor);
+    else
+        return Math.max((-(distance - 1200) * c) / 960 + (1 - c), floor);
+}
+function format(n) {
+    return n
+        .toLocaleString('en-US', { maximumFractionDigits: 100 })
+        .replace(/,/g, ' ');
+}
 function getPairs(event) {
     return __awaiter(this, void 0, void 0, function* () {
-        let settingsRaw = event.target.elements;
+        event.preventDefault();
+        let settingsData = new FormData(event.target);
+        console.log(settingsData);
         let settings = {
-            count: settingsRaw.namedItem('count')
-                .valueAsNumber,
-            exponent: settingsRaw.namedItem('exponent')
-                .valueAsNumber,
+            count: settingsData.get('count')
+                ? Number(settingsData.get('count'))
+                : 10,
+            sort: settingsData.get('sort')
+                ? settingsData.get('sort')
+                : 'best',
+            scoreType: settingsData.get('scoreType')
+                ? settingsData.get('scoreType')
+                : 'absolute',
+            exponent: settingsData.get('exponent')
+                ? Number(settingsData.get('exponent'))
+                : 2,
+            competitiveness: settingsData.get('competitiveness')
+                ? Number(settingsData.get('competitiveness'))
+                : 1,
+            cmode: settingsData.get('cmode')
+                ? settingsData.get('cmode')
+                : 'floor',
         };
         let output = document.getElementById('output');
         if (output) {
@@ -54,9 +88,11 @@ function getPairs(event) {
         }));
     
         let bigNsorted = towns.sort((a, b) => b.pop - a.pop); */
+        // Use the cleaned version of the towns data
         const response = yield fetch('Tätorter 2023 clean.json');
         const newTowns = (yield response.json());
         output.innerText += newTowns.length + ' tätorter\n';
+        // Generate all combinations of towns
         let combos = [];
         for (let i = 0; i < newTowns.length; i++) {
             for (let j = i + 1; j < newTowns.length; j++) {
@@ -64,16 +100,34 @@ function getPairs(event) {
             }
         }
         output.innerText += combos.length + ' parkombinationer\n';
+        // Calculate distance, gravity and score for each combination
         combos = combos.map((c) => {
             let dist = haversine(c.a.coords, c.b.coords);
-            let gravity = (c.a.pop * c.b.pop) / (dist * 1000) ** settings.exponent;
-            return Object.assign(Object.assign({}, c), { dist: dist, score: gravity });
+            let gravity = (c.a.pop * c.b.pop) / dist ** settings.exponent;
+            return Object.assign(Object.assign({}, c), { dist: dist, gravity: gravity, score: gravity *
+                    competitiveFactor(dist, settings.competitiveness, settings.cmode) });
         });
-        function format(n) {
-            return n.toLocaleString('en-US').replace(/,/g, ' ');
+        // If relative scores are wanted, calculate the max score and divide all scores by that
+        if (settings.scoreType === 'relative') {
+            let max = 0;
+            combos.forEach((c) => {
+                if (c.score > max)
+                    max = c.score;
+            });
+            combos = combos.map((c) => (Object.assign(Object.assign({}, c), { score: c.score / max })));
         }
+        // Simplify the combinations to only the needed data
         let simple = combos
-            .sort((a, b) => b.score - a.score)
+            .sort((a, b) => {
+            switch (settings.sort) {
+                case 'best':
+                    return b.score - a.score;
+                case 'worst':
+                    return a.score - b.score;
+                default:
+                    return 0;
+            }
+        })
             .map((c, i) => ({
             rank: i + 1,
             a: c.a.name,
@@ -82,6 +136,7 @@ function getPairs(event) {
             dist: c.dist,
         }))
             .splice(0, settings.count);
+        // Display results in a table
         let table = document.createElement('table');
         let header = document.createElement('tr');
         let rankHeader = document.createElement('th');
@@ -112,7 +167,10 @@ function getPairs(event) {
             bEl.innerText = s.b.toString();
             row.appendChild(bEl);
             let scoreEl = document.createElement('td');
-            scoreEl.innerText = format(Number(s.score.toPrecision(3)));
+            scoreEl.innerText =
+                settings.scoreType === 'absolute'
+                    ? format(Number(s.score.toPrecision(4)))
+                    : (s.score * 100).toFixed(2) + ' %';
             row.appendChild(scoreEl);
             let distEl = document.createElement('td');
             distEl.innerText = format(Number(s.dist.toFixed(0))) + ' km';
