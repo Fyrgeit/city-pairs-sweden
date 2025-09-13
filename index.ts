@@ -60,6 +60,10 @@ async function getPairs(event: SubmitEvent) {
         scoreType: settingsData.get('scoreType')
             ? (settingsData.get('scoreType') as 'absolute' | 'relative')
             : 'absolute',
+        filter:
+            settingsData.get('filter') !== null
+                ? settingsData.get('filter')!.toString().trim()
+                : '',
         exponent: settingsData.get('exponent')
             ? Number(settingsData.get('exponent'))
             : 2,
@@ -110,6 +114,14 @@ async function getPairs(event: SubmitEvent) {
         for (let j = i + 1; j < newTowns.length; j++) {
             combos.push({ a: newTowns[i], b: newTowns[j] });
         }
+    }
+
+    if (settings.filter) {
+        combos = combos.filter(
+            (c) =>
+                c.a.name.toLowerCase() === settings.filter.toLowerCase() ||
+                c.b.name.toLowerCase() === settings.filter.toLowerCase()
+        );
     }
 
     output.innerText += combos.length + ' parkombinationer\n';

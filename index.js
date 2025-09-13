@@ -57,6 +57,9 @@ function getPairs(event) {
             scoreType: settingsData.get('scoreType')
                 ? settingsData.get('scoreType')
                 : 'absolute',
+            filter: settingsData.get('filter') !== null
+                ? settingsData.get('filter').toString().trim()
+                : '',
             exponent: settingsData.get('exponent')
                 ? Number(settingsData.get('exponent'))
                 : 2,
@@ -98,6 +101,10 @@ function getPairs(event) {
             for (let j = i + 1; j < newTowns.length; j++) {
                 combos.push({ a: newTowns[i], b: newTowns[j] });
             }
+        }
+        if (settings.filter) {
+            combos = combos.filter((c) => c.a.name.toLowerCase() === settings.filter.toLowerCase() ||
+                c.b.name.toLowerCase() === settings.filter.toLowerCase());
         }
         output.innerText += combos.length + ' parkombinationer\n';
         // Calculate distance, gravity and score for each combination
